@@ -1,0 +1,52 @@
+<html>
+<head>
+  <title>Polygon</title>
+</head>
+<body>
+  <script src="https://pixijs.download/v6.2.2/pixi.min.js"></script>
+  <script>
+
+    const app = new PIXI.Application({ antialias: true });
+    document.body.appendChild(app.view);
+
+    const loader = new PIXI.Loader();
+    let points = [];
+    let color = '';
+
+    //retrieve a points array from an express/mongoDB backend
+    loader.add('polygon', '/polygon',{ xhrType: 'json' });
+
+    loader.load((loader, resources) => {
+      //fetch first record.
+      console.log(resources.polygon.data);
+      points = resources.polygon.data[0].points;
+      color = resources.polygon.data[0].color;
+    });
+    
+    loader.onProgress.add(() => {
+      console.log('loading ...')
+    });
+
+    loader.onComplete.add(() => {
+      console.log('resources loader completed');
+
+      if(points && points.length > 0){
+        const graphics = new PIXI.Graphics();
+        //draw a polygon
+        graphics.lineStyle(1, 0xffffff);
+        graphics.beginFill(color, 1);
+        graphics.drawPolygon(points);
+        graphics.endFill();
+
+        app.stage.addChild(graphics);
+      }
+    });
+
+    //Error
+    loader.onError.add(() => {
+      console.error('ERROR: something wrong...');
+    });
+  </script>
+</body>
+
+</html>
